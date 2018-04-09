@@ -51,6 +51,19 @@ $(document).ready(() => {
     L.geoJSON(data.features).addTo(mymap);
   });
 
+  function onEachFeature(feature, layer) {
+    // does this feature have a property named popupContent?
+
+    if (feature.properties) {
+      // var list = "<h1>Name</h1>"
+      //      + "<p>" + feature.properties.name + "</p>"
+      //      + "<h1>Category</h1>"
+      //      + "<p>" + features.properties.category + "</p>"
+      // layer.bindPopup(list);
+        layer.bindPopup("<h6>Name:</h6>" + feature.properties.name + "<h6>Category</h6>" + feature.properties.search_category);
+    }
+  }
+
   d3.csv('yelp_cats_boston.fixed.csv', function(data) {
     const points = data.map(d => {
       return {
@@ -59,9 +72,15 @@ $(document).ready(() => {
           type: 'Point',
           coordinates: [d.longitude, d.latitude],
         },
-        properties: d,
+        // properties: d,
+        properties: {
+          name: d.name,
+          search_category: d.search_category
+        }
       };
     });
-    L.geoJSON(points).addTo(mymap);
+    L.geoJSON(points, {
+      onEachFeature: onEachFeature
+    }).addTo(mymap);
   });
 });
