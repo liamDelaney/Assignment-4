@@ -60,7 +60,7 @@ $(document).ready(() => {
       //      + "<h1>Category</h1>"
       //      + "<p>" + features.properties.category + "</p>"
       // layer.bindPopup(list);
-        layer.bindPopup("<h6>Name:</h6>" + feature.properties.name + "<h6>Category</h6>" + feature.properties.search_category);
+        layer.bindPopup("<h6>Name:</h6>" + feature.properties.name + "<h6>Category</h6>" + feature.properties.search_category.charAt(0).toUpperCase() + feature.properties.search_category.slice(1) + "<img src=" + feature.properties.image + ">");
     }
   }
 
@@ -75,12 +75,68 @@ $(document).ready(() => {
         // properties: d,
         properties: {
           name: d.name,
-          search_category: d.search_category
+          search_category: d.search_category,
+          image: d.image_url
         }
       };
     });
-    L.geoJSON(points, {
-      onEachFeature: onEachFeature
-    }).addTo(mymap);
+    var bakeries = L.geoJson(points, {
+        filter: function(feature, layer) {
+            return feature.properties.search_category == "bakeries";
+    },
+        onEachFeature: onEachFeature
+    });
+    var cafes = L.geoJson(points, {
+        filter: function(feature, layer) {
+            return feature.properties.search_category == "cafes";
+    },
+        onEachFeature: onEachFeature
+    });
+    var chinese = L.geoJson(points, {
+        filter: function(feature, layer) {
+            return feature.properties.search_category == "chinese";
+    },
+        onEachFeature: onEachFeature
+    });
+    bakeries.addTo(mymap);
+    cafes.addTo(mymap);
+    chinese.addTo(mymap);
+    //L.geoJSON(points, {
+      //onEachFeature: onEachFeature
+    //}).addTo(mymap);
+    d3.selectAll("[name=v]").on("change", function() {
+        var selected = this.value;
+        display = this.checked ? "inline" : "none";
+        if(this.checked == true){
+            mymap.addLayer(eval(selected));
+        }
+        else{
+            mymap.removeLayer(eval(selected));
+        }
+    });
+    d3.selectAll("[name=toggle]").on("change", function() {
+        display = this.checked ? "inline" : "none";
+        if(this.checked == true){
+            mymap.addLayer(bakeries);
+            mymap.addLayer(cafes);
+            mymap.addLayer(chinese);
+        }
+        else{
+            mymap.removeLayer(bakeries);
+            mymap.removeLayer(cafes);
+            mymap.removeLayer(chinese);
+        }
+    });
   });
+    
+
+
 });
+
+function toggle(source) {
+    checkboxes = document.getElementsByName("v");
+    for(var i=0, n=checkboxes.length;i<n;i++) {
+        checkboxes[i].checked = source.checked;
+    }
+}
+
