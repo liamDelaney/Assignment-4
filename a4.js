@@ -1,23 +1,23 @@
 $(document).ready(() => {
-  var mymap = L.map('leaflet').setView([42.35806, -71.06361], 13);
-  L.tileLayer(
-    'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}',
-    {
-      attribution:
-        'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
-      maxZoom: 18,
-      id: 'mapbox.streets',
-      accessToken: 'register a mapbox account and get a free token',
-    },
-  ).addTo(mymap);
+  var mymap = new L.map('leaflet').setView([42.35806, -71.06361], 13);
+  // L.tileLayer(
+  //   'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}',
+  //   {
+  //     attribution:
+  //       'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+  //     maxZoom: 18,
+  //     id: 'mapbox.streets',
+  //     accessToken: 'register a mapbox account and get a free token',
+  //   },
+  // ).addTo(mymap);
 
   // Ke's token pk.eyJ1IjoibW9vZHNwYWNlIiwiYSI6ImNqZnJjanVkNzJxa2cyeG1rZDhlNWxkZGEifQ.p9EYGfNtWDHLd71gk8olvw
   var width = $('#leaflet')
-      .parent()
-      .width(),
+    .parent()
+    .width(),
     height = $('#leaflet')
-      .parent()
-      .height(),
+    .parent()
+    .height(),
     centered;
 
   // Defeaturesfine color scale
@@ -43,8 +43,49 @@ $(document).ready(() => {
 
   var hoods = svg.append('svg:g').attr('id', 'hoods');
 
+  // let filterStreets = () => {
+  //   return Math.random() < 1/100;
+  // };
+
+  let streetLayer;
+
   d3.json('streets.geojson', function(data) {
-    L.geoJSON(data.features).addTo(mymap);
+    const filterStreetsEvent = (e) => {
+      const ne = mymap.getBounds()._northEast;
+      const sw = mymap.getBounds()._southWest;
+      const filterStreets = (ft) => {
+        let contains = true;
+        ft.geometry.coordinates.forEach((cd) => {
+          console.log([ne.lng, ne.lat],
+          [ne.lng, sw.lat],
+          [sw.lng, sw.lat],
+          [sw.lng, ne.lat], 'd', cd);
+debug()
+          if (!d3.polygonContains([
+              [ne.lng, ne.lat],
+              [ne.lng, sw.lat],
+              [sw.lng, sw.lat],
+              [sw.lng, ne.lat]
+            ], cd)) {
+            contains = false;
+          }
+        });
+        return contains;
+      };
+
+      let features = data.features.filter(filterStreets);
+      if (features.length > 2000) {
+        features = _.sampleSize(features, 2000);
+      }
+
+      if (streetLayer) {
+        mymap.removeLayer(streetLayer);
+      }
+      streetLayer = L.geoJson(features);
+      streetLayer.addTo(mymap);
+    };
+    mymap.on('zoomend', filterStreetsEvent);
+    mymap.on('moveend', filterStreetsEvent);
   });
 
   d3.json('hoods.geojson', function(data) {
@@ -62,13 +103,13 @@ $(document).ready(() => {
       // layer.bindPopup(list);
       layer.bindPopup(
         '<h6>Name:</h6>' +
-          feature.properties.name +
-          '<h6>Category</h6>' +
-          feature.properties.search_category.charAt(0).toUpperCase() +
-          feature.properties.search_category.slice(1) +
-          '<img src=' +
-          feature.properties.image +
-          '>',
+        feature.properties.name +
+        '<h6>Category</h6>' +
+        feature.properties.search_category.charAt(0).toUpperCase() +
+        feature.properties.search_category.slice(1) +
+        '<img src=' +
+        feature.properties.image +
+        '>',
       );
     }
   }
@@ -91,13 +132,15 @@ $(document).ready(() => {
     const catsByPop = _.sortBy(cats, c => c[2]).reverse();
 
     catsByPop.slice(0, 10).forEach(c => {
-      $('.cat-filter-container>.d-flex').append(`
+      $('.cat-filter-container>.d-flex').append(
+        `
         <button type="button" class="btn btn-secondary m-1" style="width: 110px;" onClick="toggle('${
           c[0]
         }')">
           <i class="mdi mdi-36px mdi-pizza"></i>
           <div>${c[1]}</div>
-        </button>`);
+        </button>`
+      );
     });
 
     const points = data.map(d => {
