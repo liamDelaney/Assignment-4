@@ -87,12 +87,12 @@ $(document).ready(() => {
       `
       <div class="d-flex justify-content-around align-items-center" style="min-width: 20rem;">
         <div class="mr-2">
-          <img style="width: 5rem;" src='${feature.properties.image_url}'>
+          <img style="width: 5rem; border-radius: 5px;" src='${feature.properties.image_url}'>
         </div>
         <div>
           <div class="h5">${feature.properties.name}</div>
           <div class="text-secondary mb-2">${badges}</div>
-          <div>${stars} (${feature.properties.review_count})</div>
+          <div>${stars} (${feature.properties.review_count}) <a href="${feature.properties.url}" target="_blank"><img class="icon" src="icons/yelp-icon2.png"></a></div>
         </div>
       </div>`
     );

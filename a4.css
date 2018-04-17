@@ -13,6 +13,11 @@ path.leaflet-interactive {
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.2);
 }
 
+.icon {
+  width: 16px;
+  height: 16px;
+}
+
 .color {
   background: #ff851b;
   background: -moz-linear-gradient(-45deg, #ff851b 42%, #ef4547 100%);
