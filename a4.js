@@ -1,46 +1,3 @@
-//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-//:::                                                                         :::
-//:::  This routine calculates the distance between two points (given the     :::
-//:::  latitude/longitude of those points). It is being used to calculate     :::
-//:::  the distance between two locations using GeoDataSource (TM) prodducts  :::
-//:::                                                                         :::
-//:::  Definitions:                                                           :::
-//:::    South latitudes are negative, east longitudes are positive           :::
-//:::                                                                         :::
-//:::  Passed to function:                                                    :::
-//:::    lat1, lon1 = Latitude and Longitude of point 1 (in decimal degrees)  :::
-//:::    lat2, lon2 = Latitude and Longitude of point 2 (in decimal degrees)  :::
-//:::    unit = the unit you desire for results                               :::
-//:::           where: 'M' is statute miles (default)                         :::
-//:::                  'K' is kilometers                                      :::
-//:::                  'N' is nautical miles                                  :::
-//:::                                                                         :::
-//:::  Worldwide cities and other features databases with latitude longitude  :::
-//:::  are available at https://www.geodatasource.com                          :::
-//:::                                                                         :::
-//:::  For enquiries, please contact sales@geodatasource.com                  :::
-//:::                                                                         :::
-//:::  Official Web site: https://www.geodatasource.com                        :::
-//:::                                                                         :::
-//:::               GeoDataSource.com (C) All Rights Reserved 2017            :::
-//:::                                                                         :::
-//:::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-const distance = (lat1, lon1, lat2, lon2, unit) => {
-  var radlat1 = Math.PI * lat1 / 180;
-  var radlat2 = Math.PI * lat2 / 180;
-  var theta = lon1 - lon2;
-  var radtheta = Math.PI * theta / 180;
-  var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math
-    .cos(radlat2) * Math.cos(radtheta);
-  dist = Math.acos(dist);
-  dist = dist * 180 / Math.PI;
-  dist = dist * 60 * 1.1515;
-  if (unit == "K") { dist = dist * 1.609344; }
-  if (unit == "N") { dist = dist * 0.8684; }
-  return dist
-}
-
 const distance2 = (p, q, dist) => {
   return distance(p[1], p[0], q[1], q[0], 'M') <= dist;
 }
@@ -51,7 +8,7 @@ $(document).ready(() => {
     'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}',
     {
       attribution:
-        'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+        '<a href="javascript:void(0)" data-toggle="modal" data-target="#credit">Open Source Notices</a> | Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
       maxZoom: 18,
       id: 'mapbox.streets',
       accessToken: 'pk.eyJ1IjoibW9vZHNwYWNlIiwiYSI6ImNqZnJjanVkNzJxa2cyeG1rZDhlNWxkZGEifQ.p9EYGfNtWDHLd71gk8olvw',
@@ -77,7 +34,7 @@ $(document).ready(() => {
       const ne = mymap.getBounds()._northEast;
       const sw = mymap.getBounds()._southWest;
       const filterStreets = (ft) => {
-        let contains = false;
+        let mapContains = false;
         ft.geometry.coordinates.forEach((cd) => {
           if (d3.polygonContains([
               [ne.lng, ne.lat],
@@ -85,10 +42,10 @@ $(document).ready(() => {
               [sw.lng, sw.lat],
               [sw.lng, ne.lat]
             ], cd)) {
-            contains = true;
+            mapContains = true;
           }
         });
-        return contains;
+        return mapContains;
       };
 
       let features = data.features.filter(filterStreets);
@@ -159,18 +116,26 @@ $(document).ready(() => {
     };
 
     filterPinsEvent = () => {
+      const ne = mymap.getBounds()._northEast;
+      const sw = mymap.getBounds()._southWest;
       const filterPins = (ft) => {
-        let contains = false;
+        const mapContains = d3.polygonContains([
+          [ne.lng, ne.lat],
+          [ne.lng, sw.lat],
+          [sw.lng, sw.lat],
+          [sw.lng, ne.lat]
+        ], [ft.properties.longitude, ft.properties.latitude]);
+        let catContains = false;
 
         if (selectedFilters.length === 0) {
-          contains = true;
+          catContains = true;
         }
         selectedFilters.forEach((f) => {
           if (ft.properties.categories.includes(f)) {
-            contains = true;
+            catContains = true;
           }
         });
-        return contains &&
+        return mapContains && catContains &&
           parseFloat(ft.properties.rating, 10) >= ratingFilter &&
           distance2([
               parseFloat(ft.properties.longitude, 10),
