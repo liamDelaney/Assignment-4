@@ -81,7 +81,7 @@ $(document).ready(() => {
         <div>
           <div class="h5">${feature.properties.name}</div>
           <div class="text-secondary mb-2">${badges}</div>
-          <div>${stars} (${feature.properties.review_count})</div>
+          <div>${stars} (${feature.properties.review_count}) <a href="${feature.properties.url}" target="_blank"><img class="icon" src="yelp-icon2.png"></a></div>
         </div>
       </div>`
     );
