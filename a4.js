@@ -7,20 +7,25 @@ let cats = {};
 const loadDetail = (ft) => {
   $('.detail').fadeIn();
   $('.detail .avatar').attr('src', ft.properties.image_url);
-  $('.detail .name').html(`<a class="text-light" href="${ft.properties.url}">${ft.properties.name}</a>`);
-  const address = JSON.parse(ft.properties.location).display_address.join(', ');
-  const mapsLink = `<a class="text-light" href="https://www.google.com/maps/@${ft.properties.latitude},${ft.properties.longitude},18z">${address}</a>`;
-  $('.detail .location').html('<i class="fas fa-map-marker mr-1"></i>' + mapsLink);
-  $('.detail .categories').html(ft.properties.categories.slice(0, 4).map((c) => `<span style="border-radius: 15px; border: 1px dashed;" class="border-light p-1 pl-2 pr-2 m-2 h6">${cats[c][1]}</span>`).join(''));
+  $('.detail .name').html(
+    `<a class="text-light" href="${ft.properties.url}">${ft.properties.name}</a>`
+  );
+  const address = JSON.parse(ft.properties.location).display_address.join(
+    ', ');
+  const mapsLink =
+    `<a class="text-light" href="https://www.google.com/maps/@${ft.properties.latitude},${ft.properties.longitude},18z">${address}</a>`;
+  $('.detail .location').html('<i class="fas fa-map-marker mr-1"></i>' +
+    mapsLink);
+  $('.detail .categories').html(ft.properties.categories.slice(0, 4).map((c) =>
+    `<span style="border-radius: 15px; border: 1px dashed;" class="border-light p-1 pl-2 pr-2 m-2 h6">${cats[c][1]}</span>`
+  ).join(''));
 }
 
 $(document).ready(() => {
   var mymap = new L.map('leaflet').setView([42.35806, -71.06361], 13);
   L.tileLayer(
-    'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}',
-    {
-      attribution:
-        '<a href="javascript:void(0)" data-toggle="modal" data-target="#credit">Open Source Notices</a> | Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
+    'https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={accessToken}', {
+      attribution: '<a href="javascript:void(0)" data-toggle="modal" data-target="#credit">Open Source Notices</a> | Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://mapbox.com">Mapbox</a>',
       maxZoom: 18,
       id: 'mapbox.streets',
       accessToken: 'pk.eyJ1IjoibW9vZHNwYWNlIiwiYSI6ImNqZnJjanVkNzJxa2cyeG1rZDhlNWxkZGEifQ.p9EYGfNtWDHLd71gk8olvw',
@@ -98,7 +103,7 @@ $(document).ready(() => {
     );
 
     // OnClick
-    layer.on('click', function (e) {
+    layer.on('click', function(e) {
       loadDetail(e.target.feature);
     });
   }
@@ -173,25 +178,26 @@ $(document).ready(() => {
       const icon = new L.Icon({
         iconUrl: 'icons/pin.png',
         iconRetinaUrl: 'icons/pin-2x.png',
-        iconSize:    [25, 40],
-        iconAnchor:  [12, 40],
+        iconSize: [25, 40],
+        iconAnchor: [12, 40],
         popupAnchor: [1, -34],
         shadowUrl: 'icons/pin-shadow.png',
-        shadowSize:  [40, 40]
+        shadowSize: [40, 40]
       });
       const icon2 = new L.Icon({
         iconUrl: 'icons/smallpin.png',
         iconRetinaUrl: 'icons/smallpin-2x.png',
-        iconSize:    [10, 10],
-        iconAnchor:  [5, 5],
+        iconSize: [10, 10],
+        iconAnchor: [5, 5],
         popupAnchor: [1, -1],
         shadowUrl: 'icons/pin-shadow.png',
-        shadowSize:  [10, 10]
+        shadowSize: [10, 10]
       });
       pinsLayer = L.geoJson(features, {
         pointToLayer: (ft, latlng) => {
           return L.marker(latlng, {
-            icon: features2 && features2.includes(ft) ? icon2 : icon
+            icon: features2 && features2.includes(ft) ?
+              icon2 : icon
           });
         },
         onEachFeature: bindPin
