@@ -2,6 +2,18 @@ const distance2 = (p, q, dist) => {
   return distance(p[1], p[0], q[1], q[0], 'M') <= dist;
 }
 
+let cats = {};
+
+const loadDetail = (ft) => {
+  $('.detail').fadeIn();
+  $('.detail .avatar').attr('src', ft.properties.image_url);
+  $('.detail .name').html(`<a class="text-light" href="${ft.properties.url}">${ft.properties.name}</a>`);
+  const address = JSON.parse(ft.properties.location).display_address.join(', ');
+  const mapsLink = `<a class="text-light" href="https://www.google.com/maps/@${ft.properties.latitude},${ft.properties.longitude},18z">${address}</a>`;
+  $('.detail .location').html('<i class="fas fa-map-marker mr-1"></i>' + mapsLink);
+  $('.detail .categories').html(ft.properties.categories.slice(0, 4).map((c) => `<span style="border-radius: 15px; border: 1px dashed;" class="border-light p-1 pl-2 pr-2 m-2 h6">${cats[c][1]}</span>`).join(''));
+}
+
 $(document).ready(() => {
   var mymap = new L.map('leaflet').setView([42.35806, -71.06361], 13);
   L.tileLayer(
@@ -17,7 +29,6 @@ $(document).ready(() => {
 
   let loaded = 0;
 
-  let cats = {};
   let catsByPop = [];
   let selectedFilters = [];
   let ratingFilter = 0;
@@ -63,8 +74,8 @@ $(document).ready(() => {
     loadDone();
   });
 
-  const droppinBind = (feature, layer) => {
-    // does this feature have a property named popupContent?
+  const bindPin = (feature, layer) => {
+    // Popups
     const badges = feature.properties.categories.map((c) =>
       `<span class="badge badge-primary">${cats[c][1]}</span>`);
 
@@ -85,6 +96,11 @@ $(document).ready(() => {
         </div>
       </div>`
     );
+
+    // OnClick
+    layer.on('click', function (e) {
+      loadDetail(e.target.feature);
+    });
   }
 
   d3.csv('yelp_cats_boston.fixed.csv', (data) => {
@@ -144,12 +160,41 @@ $(document).ready(() => {
             distanceFilter);
       };
 
-      const features = data.features.filter(filterPins);
+      let features = data.features.filter(filterPins);
+      let features2;
+      // to get a less cluttered view
+      if (mymap.getZoom() < 18 && features.length > 30) {
+        features2 = _.sampleSize(features, features.length * 0.96);
+      }
       if (pinsLayer) {
         mymap.removeLayer(pinsLayer);
       }
+
+      const icon = new L.Icon({
+        iconUrl: 'icons/pin.png',
+        iconRetinaUrl: 'icons/pin-2x.png',
+        iconSize:    [25, 40],
+        iconAnchor:  [12, 40],
+        popupAnchor: [1, -34],
+        shadowUrl: 'icons/pin-shadow.png',
+        shadowSize:  [40, 40]
+      });
+      const icon2 = new L.Icon({
+        iconUrl: 'icons/smallpin.png',
+        iconRetinaUrl: 'icons/smallpin-2x.png',
+        iconSize:    [10, 10],
+        iconAnchor:  [5, 5],
+        popupAnchor: [1, -1],
+        shadowUrl: 'icons/pin-shadow.png',
+        shadowSize:  [10, 10]
+      });
       pinsLayer = L.geoJson(features, {
-        onEachFeature: droppinBind
+        pointToLayer: (ft, latlng) => {
+          return L.marker(latlng, {
+            icon: features2 && features2.includes(ft) ? icon2 : icon
+          });
+        },
+        onEachFeature: bindPin
       });
       pinsLayer.addTo(mymap);
     };

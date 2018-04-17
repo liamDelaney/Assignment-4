@@ -2,7 +2,20 @@ body {
   margin: 0;
 }
 
-#hoods path {
-  fill: #ccc;
-  stroke: #fff;
+path.leaflet-interactive {
+  stroke-width: 1;
+  stroke: #FF851B;
+}
+
+.detail img.avatar {
+  border-radius: 50%;
+  border: 2px white;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.2);
+}
+
+.color {
+  background: #ff851b;
+  background: -moz-linear-gradient(-45deg, #ff851b 42%, #ef4547 100%);
+  background: -webkit-linear-gradient(-45deg, #ff851b 42%, #ef4547 100%);
+  background: linear-gradient(135deg, #ff851b 42%, #ef4547 100%);
 }
